@@ -1,7 +1,7 @@
 const flips = require("../data/flips-data");
 const counts = require("../data/counts-data");
 
-const validResult = ["Heads", "Tails", "Edge"];
+const validResult = ["heads", "tails", "edge"];
 
 function bodyHasResultProperty(request, response, next) {
   const { data: { result } = {} } = request.body;
@@ -25,17 +25,16 @@ function create(request, response, next) {
   response.status(201).json({ data: newFlip });
 }
 
-function destroy(request, response, next) {
+function destroy(request, response) {
   const { flipId } = request.params;
   const index = flips.findIndex((flip) => flip.id === Number(flipId));
-  if (index > -1) {
-    // splice returns an array of the deleted elements, even if it is one element
-    const deletedFlips = flips.splice(index, 1);
-    deletedFlips.forEach(
-      (deletedFlip) =>
-        (counts[deletedFlip.result] = counts[deletedFlip.result] - 1)
-    );
-  }
+  // splice returns an array of the deleted elements, even if it is one element
+  const deletedFlips = flips.splice(index, 1);
+  deletedFlips.forEach(
+    (deletedFlip) =>
+      (counts[deletedFlip.result] = counts[deletedFlip.result] - 1)
+  );
+
   response.sendStatus(204);
 }
 
@@ -68,7 +67,7 @@ function resultPropertyIsValid(request, response, next) {
   }
   next({
     status: 400,
-    message: `Value of the 'result' property must be one of ${validResult}. Received: ${request.body.result}`,
+    message: `Value of the 'result' property must be one of ${validResult}. Received: ${result}`,
   });
 }
 
@@ -95,5 +94,5 @@ module.exports = {
   list,
   read: [flipExists, read],
   update: [flipExists, bodyHasResultProperty, resultPropertyIsValid, update],
-  delete: destroy,
+  delete: [flipExists, destroy],
 };
